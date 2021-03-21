@@ -200,3 +200,23 @@ $f(l, v)=\frac{F(l, v)G(l, v, h)D(h)}{4(n\cdot h)(n \cdot v)}$
 - F为菲涅尔反射函数
 - G为阴影遮罩函数，即未被shadow或者mask的比例
 - D为法线分布函数(NDF)
+
+### Ward BRDF模型
+一般情况下，我们可以将BRDF分为两类:  
+各向同性(Isotropic)的BRDF
+- 反射不受与给定表面法向夹角的约束
+- 随机表面微结构 
+ 
+各向异性(Anisotropic)的BRDF
+- 反射比随着与某个给定的表面法向之间的夹角而变化
+- 图案的表面微结构
+- 金属丝，绸缎，毛发等
+
+Phong和Cook-Torrance BRDF模型都不能处理各向异性的效果，Ward模型却可以。  
+
+Ward模型介绍了更一般的表面法向表达方式:通过椭圆体(ellipsoids)这种允许各向异性反射的形式来表达。  
+
+然而，由于没有考虑菲涅尔因子(Fresnel factor)和几何衰减因子(geometric attenuation factor)，该模型更像一种经验模型，但是还是属于基于物理的BRDF模型。  
+
+各向同性的Ward模型定义为:  
+$\large \rho_{bd}(\theta_{i}, \phi_{i}, \theta_{r}, \phi_{r})=\frac{\rho_{d}}{\pi}+\rho_{s}\cdot \frac{1}{\sqrt{\cos\theta_{i}\cos\theta{r}}}\cdot \frac{\exp[-\tan^2\sigma/\alpha^2]}{4\pi\alpha^2}$
