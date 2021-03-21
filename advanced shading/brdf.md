@@ -188,3 +188,15 @@ NDF的定义式:
 $D(h)=\frac{\alpha^2}{\pi((n\cdot h)^2(\alpha^2 - 1) + 1)^2}$  
 在微观层面上不规则的表面会造成光的漫反射。例如，模糊的反射是由于光线的散射造成的。而反射的光线并不均匀，因此我们得到的高光反射是模糊的。如下图:  
 ![](./6.4.jpeg)
+
+## 7基于物理的BRDF-常见模型
+### 7.1Cook-Torrance BRDF模型
+Cook-Torrance模型作为图形学中最早的基于物理的BRDF模型，Cook-Torrance模型将物理学中的菲涅尔反射引入了图形学，实现了比较逼真的效果。  
+
+Cook-Torrance微平面着色模型(Cook-Torrance microfacet specular shading model)，即Microfacet Specular BRDF，定义为:
+
+$f(l, v)=\frac{F(l, v)G(l, v, h)D(h)}{4(n\cdot h)(n \cdot v)}$  
+其中:
+- F为菲涅尔反射函数
+- G为阴影遮罩函数，即未被shadow或者mask的比例
+- D为法线分布函数(NDF)
