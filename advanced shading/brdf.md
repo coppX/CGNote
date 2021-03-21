@@ -1,8 +1,8 @@
 Bidirectional Reflectance Distribution Function/双向反射分布函数  
-BRDF是计算机图形学中最核心的概念之一，他描述的是物体表面将光能从任何一个入射放心反射到任何一个视点方向的反射特性，即入射光线经过某个表面反射后如何在各个出射方向上分布。BRDF模型是绝大多数图形算法中描述光反射现象的基本模型
+BRDF是计算机图形学中最核心的概念之一，他描述的是物体表面将光能从任何一个入射方向反射到任何一个视点方向的反射特性，即入射光线经过某个表面反射后如何在各个出射方向上分布。BRDF模型是绝大多数图形算法中描述光反射现象的基本模型
 ## 数学基础
 ### 1.1球面坐标Spherical Coordinate
-![](./1.1.png)
+![](./1.1.png)  
 其中:
 - r表示向量的长度
 - $\theta$表示向量和Z轴的夹角
@@ -102,3 +102,42 @@ $Q_{reflected} \leq Q_{incoming}$
 
 ### 4.3线性特征
 很多时候，材质往往需要多重BRDF计算以实现其反射特性。表面上某一点的全部反射辐射度可以简单地表示为各BRDF反射辐射度之和。例如，镜面漫反射即可通过多重BRDF计算加以实现。
+
+## 5BRDF模型分类
+根据BRDF的定义来直接应用，会有一些无从下手的感觉。而为了方便和高效地使用BRDF数据，大家往往将BRDF组织成为各种参数化的数值模型。  
+有各式各样的BRDF模型，如:  
+- Phong(1975)
+- Blinn-Phong(1977)
+- Cook-Torrance(1981)
+- Ward(1992)
+- Oren-Nayar(1994)
+- Schlick(1994)
+- Modified-Phong(Lafortune 1994)
+- Lafortune(1997)
+- Neumann-Neumann(1999)
+- Albedo pump-up(Neumann-Neumann 1999)
+- Ashikhmin-Shirley(2000)
+- Kelemen(2001)
+- Halfway Vector Disk(Edwards 2006)
+- GGX(Walter 2007)
+- Distribution-based BRDF(Ashikmin 2007)
+- Kurt(2010)
+
+这些BRDF的模型可以分为如下几类:
+- 经验模型(Empirical Models):使用基于实验提成的公式对BRDF做快速估计。
+- 数据驱动模型(Data-driven Models):采集真实材质表面在不同光照角度和观察角将BRDF按照实测数据建立查找表，记录在数据库中，以便于快速的查找和计算。
+- 基于物理的模型(Physical-based Models):根据物体表面材料和几何以及光学属性建立反射方程，从而计算BRDF，实现极具真实感的渲染效果。
+
+### 5.1BRDF经验模型
+关于BRDF的经验模型，有如下几个要点:
+- 经验模型提供简洁的公式以便于反射光线的快速计算。
+- 经验模型不考虑材质的特性，仅仅提供一个反射光的粗糙近似。
+- 经验模型不一定满足物理定律，比如Hemholtz可逆性或能量守恒定律。
+- 经验模型因为其简洁或高效性被广泛运用。
+常见的BRDF经验模型有:
+- Lambert漫反射模型
+- Phong模型
+- Blinn-Phong模型
+- 快速Phong模型
+- 可逆Phong模型
+
