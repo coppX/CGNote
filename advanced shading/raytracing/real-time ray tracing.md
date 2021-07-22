@@ -56,6 +56,7 @@ shade(point)
 - any hit shader
 - interstion shader
 - callable shader  
+使用参考下方TraceRay控制流部分
 [DXR详情参考](https://docs.microsoft.com/en-us/windows/win32/direct3d12/direct3d-12-raytracing-hlsl-shaders)  
 
 # 优化
@@ -68,7 +69,7 @@ shade(point)
 - 底层加速结构(Bottom-level acceleration structure，简写BLAS)，BLAS是集合体级别的，对于传统的三角形Mesh，它使用Bounding Volume Hierarchy(BVH)树型数据结构来管理这些三角形。BLAS一般存储实际的geometry数据，比如vertex/index buffer等，这些数据可以用于计算和光线的交点，对于procedural geometry，还需要存储AABB,并使用intersection shader计算和光线的交点。  
 BLAS中的geometry可以被TLAS多次引用，每个引用就是一个实例化的过程。这样虽然某个Mesh在场景中被用到多次，但是它只需要在BLAS中存一次，减少了显存的占用。 
 场景更新时，一般更新实例位置更新TLAS就可以了，只有在变更geometry信息时才会更新BLAS的数据，场景中大部分是重复的静态网格资源，所以可以避免频繁的修改BLAS的数据，所以效率是很高的。   
-在DXR中，光线可能与任意的geometry相交，并触发对应的material shader，其中geometry存储在BLAS中，而对应的TLAS里面存储了相应的shaderIndex，也就是对该geometry进行着色的material shader，对应的shader数据以shader table的方式存储在显存中。如果场景很大，material shader复杂，显存的压力很大。另一方面，光线与场景求交调用material shader的过程，没有明显的特点，很难利用局部性进行优化，所以现在的实时渲染中，基本都不会采用full resolution的光线追踪。
+在DXR中，光线可能与任意的geometry相交，并触发对应的material shader，其中geometry存储在BLAS中，而对应的TLAS里面存储了相应的shader offset index，也就是对该geometry进行着色的material shader，对应的shader数据以shader table的方式存储在显存中。如果场景很大，material shader复杂，显存的压力很大。另一方面，光线与场景求交调用material shader的过程，没有明显的特点，很难利用局部性进行优化，所以现在的实时渲染中，基本都不会采用full resolution的光线追踪。
 ## 连贯性(Coherency)
 在程序执行期间利用连贯性是硬件和软件上性能优化最重要的想法之一，在现今的硬件上，在时间和能耗上最昂贵的操作就是内存访问,大多数情况下，性能优化侧重于利用内存的连贯性（缓存）和围绕内存延迟进行调度计算。GPU 本身可被视为一个处理器，它明确约束其运行的程序（数据并行、独立计算线程）的执行模型，以便更好地利用内存的连贯性。
 ### 场景连贯性(Scene Coherency)
@@ -85,12 +86,12 @@ BLAS中的geometry可以被TLAS多次引用，每个引用就是一个实例化�
 # 降噪
 ![](./raytracing6.jpg)
 [图片来源](https://zhuanlan.zhihu.com/p/28288053)
-## 采样降噪
+## 采样过滤
 - SVGF(Spatiotemporal Variance-Guided Filter)
-- A-SVGF(Adaptive Spatiotemporal Variance-Guided Filtering )
-## 机器学习降噪
-- OIDN
-- Optix
+- A-SVGF(Adaptive Spatiotemporal Variance-Guided Filtering)
+## 机器学习
+- OIDN(Intel Open Image Denoise)
+- Optix(NVIDIA Opitx ray tracing engine)
 - DLSS(Deep Learning Super Sampling)
 
 
