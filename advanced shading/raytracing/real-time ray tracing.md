@@ -20,7 +20,7 @@ for (P in pixels)
 光线追踪示意图
 ![](./raytracing1.png)
 ![](./raytracing2.png)
-人看见物体是因为物体反射了光线进入人眼中，光线追踪根据光路的可逆性，从人眼中发出光线射向物体，然后计算这个点的颜色，然后再反射到不同的物体上，一直递归下去，直到到达光线深度(递归深度)或者达到光源。  
+人看见物体是因为物体反射了光线进入人眼中，光线追踪根据光路的可逆性，从人眼中发出光线射向物体，然后计算这个点的颜色，然后再反射到不同的物体上，一直递归下去，直到到达光线深度(递归深度)或者达到结束条件。  
 注:shadow ray指交点和光源的连线，因为可以用来判断该点是否处于阴影中
 
 ## 代码描述
@@ -64,7 +64,7 @@ shade(point)
 ![](./raytracing3.png)
 [DXR中说明](https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html#ray-geometry-interaction-diagram)  
 [vulkan中说明](https://nvpro-samples.github.io/vk_raytracing_tutorial_KHR/#accelerationstructure)
-- 顶层加速结构(Top-level acceleration structure，简写TLAS)，TLAS是对象实例级别的。每个实例都指向一个BLAS，并且包含一些特定于这个实例的数据信息，例如变换矩阵，或者用于指定InstanceID用于shader中使用。BLAS的数据都是在局部空间的，TLAS维护了从local2world的转换矩阵。
+- 顶层加速结构(Top-level acceleration structure，简写TLAS)，TLAS是对象实例级别的。每个实例都指向一个BLAS，并且包含一些特定于这个实例的数据信息，例如变换矩阵、InstanceID(24-bit,vulkan)和shader offset index(32-bit，vulkan，用于在shader tables中查找shader使用)。BLAS的数据都是在局部空间的，TLAS维护了从local2world的转换矩阵。可以有多个实例指向一个BLAS,但是他们的transforms不同。
 - 底层加速结构(Bottom-level acceleration structure，简写BLAS)，BLAS是集合体级别的，对于传统的三角形Mesh，它使用Bounding Volume Hierarchy(BVH)树型数据结构来管理这些三角形。BLAS一般存储实际的geometry数据，比如vertex/index buffer等，这些数据可以用于计算和光线的交点，对于procedural geometry，还需要存储AABB,并使用intersection shader计算和光线的交点。  
 BLAS中的geometry可以被TLAS多次引用，每个引用就是一个实例化的过程。这样虽然某个Mesh在场景中被用到多次，但是它只需要在BLAS中存一次，减少了显存的占用。 
 场景更新时，一般更新实例位置更新TLAS就可以了，只有在变更geometry信息时才会更新BLAS的数据，场景中大部分是重复的静态网格资源，所以可以避免频繁的修改BLAS的数据，所以效率是很高的。   
@@ -79,13 +79,20 @@ BLAS中的geometry可以被TLAS多次引用，每个引用就是一个实例化�
 ![](./raytracing5.png)
 - 首先硬件会搜索加速结构里面可能和光线相交的primitive，如果找到了就判断该primitive是否是三角形，如果是三角形就采用固定管线里面的三角形求交算法，如果该primitive不是三角形，则采用自己用intersection shader定义的求交算法来进行求交运算。
 - 拿到交点后，判断是不是最近的交点，如果是就判断交点处物体是否不透明(opaque)，判断方法就是通过检测instance flags或者没有any hit shader的时候就默认交点处是不透明的。  
-    
-    1.交点处透明:就执行any hit shader， any hit shader通常用来处理透明(transparency)和阴影(shadow),这两种情况下需要计算光线和场景的多个交点。DXR为了避免光线数量爆掉，在any hit shader中强制不允许生成新的光线。  
-    
-    2.交点处不透明:执行closest hit shader， closest hit shader在所有的any hit shader完成之后执行，通常用于计算屏幕像素颜色，在closest hit shader中可以产生新的光线。
+    - 交点处透明:就执行any hit shader， any hit shader通常用来处理透明(transparency)和阴影(shadow),这两种情况下需要计算光线和场景的多个交点。DXR为了避免光线数量爆掉，在any hit shader中强制不允许生成新的光线。  
+    - 交点处不透明:执行closest hit shader， closest hit shader在所有的any hit shader完成之后执行，通常用于计算屏幕像素颜色，在closest hit shader中可以产生新的光线。
 - 如果光线和场景没有交点，就触发了miss shader。在miss shader中也可以生成新的光线，通常是加长光线的长度或改和lower-LOD的场景相交，其目的是重新尝试获取交点。在miss shader中也可以采样skybox，直接返回skybox的颜色。
 # 降噪
-TODO
+![](./raytracing6.jpg)
+[图片来源](https://zhuanlan.zhihu.com/p/28288053)
+## 采样降噪
+- SVGF(Spatiotemporal Variance-Guided Filter)
+- A-SVGF(Adaptive Spatiotemporal Variance-Guided Filtering )
+## 机器学习降噪
+- OIDN
+- Optix
+- DLSS(Deep Learning Super Sampling)
+
 
 # 参考文献
 - [《real-time rendering 4th》chapter26 real-time ray tracing](http://www.realtimerendering.com/raytracing.html)  
@@ -95,3 +102,4 @@ TODO
 - https://jerish.blog.csdn.net/article/details/104708361  
 - https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html  
 - https://nvpro-samples.github.io/vk_raytracing_tutorial_KHR/#accelerationstructure
+- https://alain.xyz/blog/ray-tracing-denoising
